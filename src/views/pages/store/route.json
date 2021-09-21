@@ -1,0 +1,6 @@
+{
+    "name": "store",
+    "meta": {
+        "requiresAuth": true
+    }
+}
