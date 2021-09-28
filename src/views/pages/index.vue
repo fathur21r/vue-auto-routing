@@ -67,6 +67,7 @@
 // @ is an alias to /src
 import speakeasy from 'speakeasy'
 import QRCode from 'qrcode'
+import cookies from 'vue-cookies'
 export default {
   name: 'home',
   components: {
@@ -88,6 +89,10 @@ export default {
       otp: ''
     }
   },
+  created () {
+    cookies.set('theme','default')
+    alert(cookies.get('vuex'));
+  },
   methods: {
     generate_2fa() {
       this.secretCode = speakeasy.generateSecret({
@@ -96,7 +101,7 @@ export default {
       });
 
       let otpauth_url = speakeasy.otpauthURL({
-        secret: this.secretCode.otpauth_url,
+        secret: this.secretCode.base32,
         label: 'test@email.com',
         type: 'totp',
         issuer: 'Test Google Authenticator',
@@ -108,10 +113,11 @@ export default {
       QRCode.toDataURL(otpauth_url, (err, data_url) => {
         this.qrCode = data_url
       });
+      this.$store.dispatch('save', { secretCode: this.secretCode.base32, otpauthurl : otpauth_url})
     },
     verify(){
       let result = speakeasy.totp.verify({
-        secret: this.secretCode.otpauth_url,
+        secret: this.$store.getters["getAll"].secretCode,
         token: this.otp,
         algorithm: 'sha512',
         encoding: 'base64'
